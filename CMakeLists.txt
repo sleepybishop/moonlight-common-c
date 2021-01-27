@@ -8,7 +8,16 @@ find_package(OpenSSL 1.0.2 REQUIRED)
 
 aux_source_directory(src SRC_LIST)
 aux_source_directory(enet SRC_LIST)
-aux_source_directory(reedsolomon SRC_LIST)
+
+set(NANORS_SRC_LIST
+   "nanors/oblas_lite.c"
+   "nanors/rs.c"
+)
+set(SRC_LIST
+  ${SRC_LIST}
+  ${NANORS_SRC_LIST}
+)
+set(VECTORIZATION_FLAGS "-O3 -march=native -funroll-loops")
 
 if(MSVC)
   add_compile_options(/W4 /wd4100 /wd4232)
@@ -16,6 +25,7 @@ if(MSVC)
   link_libraries(ws2_32.lib qwave.lib winmm.lib)
 else()
   add_compile_options(-Wall -Wextra -Wno-unused-parameter -Werror)
+  set_property(SOURCE ${NANORS_SRC_LIST} PROPERTY COMPILE_FLAGS ${VECTORIZATION_FLAGS})
 endif()
 
 string(TOUPPER "x${CMAKE_BUILD_TYPE}" BUILD_TYPE)
@@ -29,7 +39,7 @@ add_definitions(-DHAS_SOCKLEN_T)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/enet/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/reedsolomon
+  ${CMAKE_CURRENT_SOURCE_DIR}/nanors
   ${OPENSSL_INCLUDE_DIR})
 
 link_libraries(${OPENSSL_CRYPTO_LIBRARY})
